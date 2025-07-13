@@ -1,6 +1,7 @@
 import './App.css'
 import { BrowserRouter, Route, Routes } from 'react-router'
 import Formulario from './componentes/Formulario'
+import Menu from './componentes/Menu';
 
 function App() {
   const transacao = [
@@ -25,10 +26,11 @@ function App() {
   return (
     <section>
       <BrowserRouter>
+        <Menu />
         <Routes>
-          <Route path='*' element={<Formulario endpoint="transacao" campos={transacao} />} />
-          <Route path='*' element={<Formulario endpoint="conta" campos={conta} />} />
-          <Route path='*' element={<Formulario endpoint="categoria" campos={categoria} />} />
+          <Route path='/transacao' element={<Formulario endpoint="transacao" campos={transacao} />} />
+          <Route path='/conta' element={<Formulario endpoint="conta" campos={conta} />} />
+          <Route path='categoria' element={<Formulario endpoint="categoria" campos={categoria} />} />
         </Routes>
       </BrowserRouter>
     </section>
