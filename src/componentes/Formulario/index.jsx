@@ -6,7 +6,7 @@ export default function Formulario({ endpoint, campos }) {
     const [lista, setLista] = useState({
         contas: [],
         categorias: [],
-        tipos: ["Entrada", "Saída"]
+        tipos: ["Receita", "Despesa"]
     });
     const [mensagem, setMensagem] = useState('');
 
@@ -16,7 +16,9 @@ export default function Formulario({ endpoint, campos }) {
 
     const aoEnviar = async (evento) => {
         evento.preventDefault();
+
         try {
+            console.log(JSON.stringify(dados))
             const resposta = await fetch(`http://localhost:8080/${endpoint}`, {
                 method: 'POST',
                 headers: {
