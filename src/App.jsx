@@ -2,6 +2,7 @@ import './App.css'
 import { BrowserRouter, Route, Routes } from 'react-router'
 import Formulario from './componentes/Formulario'
 import Menu from './componentes/Menu';
+import Lista from './componentes/Lista';
 
 function App() {
   const transacao = [
@@ -25,12 +26,19 @@ function App() {
 
   return (
     <section>
+
       <BrowserRouter>
         <Menu />
         <Routes>
-          <Route path='/transacao' element={<Formulario endpoint="transacao" campos={transacao} />} />
-          <Route path='/conta' element={<Formulario endpoint="conta" campos={conta} />} />
-          <Route path='categoria' element={<Formulario endpoint="categoria" campos={categoria} />} />
+          <Route path='/transacao' element={<Lista endpoint="transacao" colapsavel={true} />} />
+          <Route path='/transacao/cadastro' element={<Formulario endpoint="transacao" campos={transacao} />} />
+
+          <Route path='/categoria' element={<Lista endpoint="categoria" />} />
+          <Route path='categoria/cadastro' element={<Formulario endpoint="categoria" campos={categoria} />} />
+
+          <Route path='/conta' element={<Lista endpoint="conta" />} />
+          <Route path='/conta/cadastro' element={<Formulario endpoint="conta" campos={conta} />} />
+
         </Routes>
       </BrowserRouter>
     </section>
