@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router";
 
-export default function Formulario({ endpoint, campos }) {
+export default function Formulario({ endpoint, campos, itens }) {
 
+    const navigate = useNavigate();
+    const { id } = useParams();
     const [dados, setDados] = useState({});
     const [lista, setLista] = useState({
         contas: [],
@@ -12,30 +15,61 @@ export default function Formulario({ endpoint, campos }) {
 
     useEffect(() => {
         buscaListas();
+        if (id) {
+            fetch(`http://localhost:8080/${endpoint}?id=${id}`)
+                .then((res) => res.json())
+                .then((json) => setDados(json[0]))
+                .catch((erro) => console.error("Erro ao carregar os itens", erro));
+        }
     }, []);
+
+
 
     const aoEnviar = async (evento) => {
         evento.preventDefault();
 
-        try {
-            console.log(JSON.stringify(dados))
-            const resposta = await fetch(`http://localhost:8080/${endpoint}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(dados)
-            });
+        if (id) {
+            try {
+                console.log(JSON.stringify(dados))
+                const resposta = await fetch(`http://localhost:8080/${endpoint}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dados)
+                });
+                if (resposta.ok) {
+                    setMensagem("✅ Dados enviados com sucesso!");
+                    navigate(`/${endpoint}`);
+                } else {
+                    setMensagem("❌ Erro ao enviar os dados.");
+                }
+            } catch (erro) {
+                console.error("Erro:", erro);
+                setMensagem("❌ Erro ao enviar.");
 
-            if (resposta.ok) {
-                setMensagem("✅ Dados enviados com sucesso!");
-                setDados({});
-            } else {
-                setMensagem("❌ Erro ao enviar os dados.");
             }
-        } catch (erro) {
-            console.error("Erro:", erro);
-            setMensagem("❌ Erro ao enviar.");
+
+        } else {
+
+            try {
+                console.log(JSON.stringify(dados))
+                const resposta = await fetch(`http://localhost:8080/${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(dados)
+                });
+
+                if (resposta.ok) {
+                    setMensagem("✅ Dados enviados com sucesso!");
+                    setDados({});
+                } else {
+                    setMensagem("❌ Erro ao enviar os dados.");
+                }
+            } catch (erro) {
+                console.error("Erro:", erro);
+                setMensagem("❌ Erro ao enviar.");
+            }
         }
     };
 
@@ -57,6 +91,12 @@ export default function Formulario({ endpoint, campos }) {
             console.error("Erro ao buscar listas:", erro);
             setMensagem("❌ Erro ao buscar dados.");
         }
+    };
+
+    const formatarMoeda = (valor) => {
+        if (!valor) return "";
+        const numero = Number(valor.replace(/\D/g, "")) / 100;
+        return numero.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
     };
 
     return (
@@ -91,12 +131,23 @@ export default function Formulario({ endpoint, campos }) {
                         ) : (
                             <input
                                 className="bg-gray-700 text-white border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                type={campo.tipo}
-                                value={dados[campo.nome] || ""}
-                                onChange={(evento) =>
-                                    setDados({ ...dados, [campo.nome]: evento.target.value })
+                                type={campo.nome === "valor" ? "text" : campo.tipo}
+                                value={
+                                    campo.nome === "valor"
+                                        ? formatarMoeda(dados[campo.nome]?.toString() || "")
+                                        : dados[campo.nome] || ""
                                 }
-                                required
+                                onChange={(evento) => {
+                                    let valor = evento.target.value;
+                                    if (campo.nome === "valor") {
+                                        const numero = valor.replace(/\D/g, "");
+                                        const decimal = (Number(numero) / 100).toFixed(2);
+                                        setDados({ ...dados, [campo.nome]: decimal });
+                                    } else {
+                                        setDados({ ...dados, [campo.nome]: valor });
+                                    }
+                                }}
+                                required={campo.nome !== "descricao"}
                             />
                         )}
                     </div>

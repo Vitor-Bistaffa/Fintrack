@@ -2,22 +2,27 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router";
 
 export default function Lista({ endpoint, colapsavel = false }) {
+    // Estados principais
     const [dados, setDados] = useState([]);
     const [totais, setTotais] = useState({ receita: 0, despesa: 0 });
     const [erro, setErro] = useState(null);
     const [abertos, setAbertos] = useState({});
 
+    // Data atual
     const hoje = new Date();
     const anoAtual = hoje.getFullYear();
     const mesAtual = String(hoje.getMonth() + 1).padStart(2, "0");
 
+    // Filtrar dados apenas do mês atual
     const dadosMes = dados.filter((item) => {
         if (!item.data) return false;
         const [ano, mes] = item.data.split("-");
         return ano === anoAtual.toString() && mes === mesAtual;
     });
 
-    // Buscar dados da API
+    // =========================
+    // Função para buscar dados da API
+    // =========================
     const listar = async () => {
         try {
             const resposta = await fetch(`http://localhost:8080/${endpoint}`);
@@ -29,7 +34,9 @@ export default function Lista({ endpoint, colapsavel = false }) {
         }
     };
 
-    // Busca totais da transações
+    // =========================
+    // Função para buscar totais de receitas e despesas do mês
+    // =========================
     const listaTotais = async () => {
         try {
             const resReceita = await fetch(
@@ -49,15 +56,15 @@ export default function Lista({ endpoint, colapsavel = false }) {
                 receita: receitaMes ? receitaMes.total : 0,
                 despesa: despesaMes ? despesaMes.total : 0,
             });
-
-            // console.log(despesaMes)
         } catch (erro) {
             setErro(erro);
             console.error("Erro:", erro);
         }
     };
 
+    // =========================
     // Define método de remoção
+    // =========================
     const metodoRemocao = (endpoint) => {
         switch (endpoint) {
             case "transacao":
@@ -67,7 +74,9 @@ export default function Lista({ endpoint, colapsavel = false }) {
         }
     };
 
+    // =========================
     // Remove item
+    // =========================
     const remover = async (id) => {
         try {
             const resposta = await fetch(
@@ -85,7 +94,9 @@ export default function Lista({ endpoint, colapsavel = false }) {
         }
     };
 
+    // =========================
     // Alterna categorias (apenas se colapsavel = true)
+    // =========================
     const toggleCategoria = (categoria) => {
         setAbertos((prev) => ({
             ...prev,
@@ -93,12 +104,17 @@ export default function Lista({ endpoint, colapsavel = false }) {
         }));
     };
 
+    // =========================
+    // useEffect para carregar dados ao montar o componente
+    // =========================
     useEffect(() => {
         listaTotais();
         listar();
     }, [endpoint]);
 
-    // Agrupar por categoria
+    // =========================
+    // Agrupar dados por categoria
+    // =========================
     const dadosAgrupados = dadosMes.reduce((acc, item) => {
         const categoria = item.categoria;
         if (!acc[categoria]) acc[categoria] = [];
@@ -106,15 +122,20 @@ export default function Lista({ endpoint, colapsavel = false }) {
         return acc;
     }, {});
 
-    // Cabeçalhos da tabela dinamicamente
+    // =========================
+    // Colunas da tabela dinamicamente
+    // =========================
     const colunas = dados.length > 0 ? Object.keys(dados[0]) : [];
 
-    // Função para formatar campos
-    const formatarCampo = (coluna, valor) => {
+    // =========================
+    // Formata os campos da tabela
+    // =========================
+    const formatarCampo = (coluna, valor, tipo) => {
+        // Valor com máscara de moeda
         if (coluna === "valor" && typeof valor === "number") {
+            const cor = tipo === "Receita" ? "text-green-400" : tipo === "Despesa" ? "text-red-400" : "";
             return (
-                <span>
-
+                <span className={`font-semibold ${cor}`}>
                     {valor.toLocaleString("pt-BR", {
                         style: "currency",
                         currency: "BRL",
@@ -123,11 +144,13 @@ export default function Lista({ endpoint, colapsavel = false }) {
             );
         }
 
+        // Data formatada sem ajuste de fuso horário
         if (coluna === "data" && typeof valor === "string") {
-            const data = new Date(valor);
-            return data.toLocaleDateString("pt-BR");
+            const [ano, mes, dia] = valor.split("-");
+            return `${dia}/${mes}/${ano}`;
         }
 
+        // Objetos convertidos em JSON
         if (typeof valor === "object" && valor !== null) {
             return JSON.stringify(valor);
         }
@@ -135,42 +158,41 @@ export default function Lista({ endpoint, colapsavel = false }) {
         return valor;
     };
 
-    // Renderiza uma tabela de itens
+    // Renderiza a tabela
     const renderTabela = (itens) => (
         <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left text-gray-300 border border-gray-600 rounded-lg">
+            <table className="w-full text-sm text-left text-gray-200 border border-gray-700 rounded-lg shadow-md">
                 <thead className="bg-gray-700 text-gray-100">
                     <tr>
                         {colunas.map((coluna) => (
-                            <th key={coluna} className="px-4 py-2 capitalize">
+                            <th key={coluna} className="px-4 py-3 capitalize">
                                 {coluna}
                             </th>
                         ))}
-                        <th className="px-4 py-2">Ações</th>
+                        <th className="px-4 py-3">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
                     {itens.map((item) => (
                         <tr
                             key={item.id}
-                            className="border-t border-gray-600 hover:bg-gray-800"
+                            className="border-t border-gray-700 hover:bg-gray-800 transition-colors"
                         >
                             {colunas.map((coluna) => (
                                 <td key={coluna} className="px-4 py-2">
-                                    {formatarCampo(coluna, item[coluna])}
+                                    {formatarCampo(coluna, item[coluna], item.tipo)}
                                 </td>
                             ))}
                             <td className="px-4 py-2 flex gap-2">
-                                <button
-                                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1 px-3 rounded"
-                                    onClick={() =>
-                                        alert("Função editar em construção")
-                                    }
+
+                                <Link
+                                    className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-1 px-3 rounded-lg shadow"
+                                    to={`/${endpoint}/editar/${item.id}`}
                                 >
                                     Editar
-                                </button>
+                                </Link>
                                 <button
-                                    className="bg-red-600 hover:bg-red-700 text-white font-semibold py-1 px-3 rounded"
+                                    className="bg-red-500 hover:bg-red-600 text-white font-medium py-1 px-3 rounded-lg shadow"
                                     onClick={() => remover(item.id)}
                                 >
                                     Remover
@@ -183,43 +205,59 @@ export default function Lista({ endpoint, colapsavel = false }) {
         </div>
     );
 
+
+    // Render principal do componente
     return (
-        <section className="min-h-screen flex items-center justify-center bg-gray-900 px-4">
+        <section className="min-h-screen flex items-center justify-center bg-gray-900 px-4 py-10">
             <div className="w-full max-w-6xl bg-gray-800 p-8 rounded-2xl shadow-xl">
-                <Link
-                    to={`/${endpoint}/cadastro`}
-                    className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-500 transition-colors"
-                >
-                    Cadastro
-                </Link>
+                {/* Cabeçalho */}
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-bold text-gray-100 capitalize">
+                        Lista de {endpoint}
+                    </h2>
+                    <Link
+                        to={`/${endpoint}/cadastro`}
+                        className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-lg shadow transition-colors"
+                    >
+                        + Cadastro
+                    </Link>
+                </div>
+                <div>
+                    <input type="text" /> data
+                </div>
 
-                <h2 className="text-2xl font-bold text-center text-gray-100 mb-6 capitalize">
-                    Lista de {endpoint}
-                </h2>
+                {/* Totais */}
+                {colapsavel && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div className="bg-green-700/30 p-4 rounded-lg text-center shadow">
+                            <p className="text-sm text-gray-300">Receita</p>
+                            <p className="text-2xl font-bold text-green-400">
+                                R$ {totais.receita}
+                            </p>
+                        </div>
+                        <div className="bg-red-700/30 p-4 rounded-lg text-center shadow">
+                            <p className="text-sm text-gray-300">Despesa</p>
+                            <p className="text-2xl font-bold text-red-400">
+                                R$ {totais.despesa}
+                            </p>
+                        </div>
+                        <div className="bg-blue-700/30 p-4 rounded-lg text-center shadow">
+                            <p className="text-sm text-gray-300">Total</p>
+                            <p className="text-2xl font-bold text-blue-400">
+                                R$ {totais.receita - totais.despesa}
+                            </p>
+                        </div>
+                    </div>
+                )}
 
-                {colapsavel ? (
-                    <h3 className="text-center text-lg mb-4 text-gray-200">
-                        Receita:{" "}
-                        <span className="text-green-400 font-semibold">
-                            R$ {totais.receita}
-                        </span>{" "}
-                        | Despesa:{" "}
-                        <span className="text-red-400 font-semibold">
-                            R$ {totais.despesa}
-                        </span>{" "}
-                        | Total:{" "}
-                        <span className="font-semibold">
-                            R$ {totais.receita - totais.despesa}
-                        </span>
-                    </h3>
-                ) : null}
-
+                {/* Mensagem de erro */}
                 {erro && (
                     <p className="text-red-400 text-center font-medium mb-4">
                         {erro.toString()}
                     </p>
                 )}
 
+                {/* Tabelas */}
                 <div className="space-y-6">
                     {colapsavel
                         ? Object.entries(dadosAgrupados).map(
@@ -232,7 +270,7 @@ export default function Lista({ endpoint, colapsavel = false }) {
                                         onClick={() =>
                                             toggleCategoria(categoria)
                                         }
-                                        className="w-full text-left px-4 py-3 font-semibold text-gray-100 bg-gray-600 hover:bg-gray-500 rounded-t-lg"
+                                        className="w-full text-left px-4 py-3 font-semibold text-gray-100 bg-gray-600 hover:bg-gray-500 rounded-t-lg transition-colors"
                                     >
                                         {categoria} ({itens.length})
                                     </button>
