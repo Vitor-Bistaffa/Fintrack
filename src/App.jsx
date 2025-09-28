@@ -3,26 +3,9 @@ import { BrowserRouter, Route, Routes } from 'react-router'
 import Formulario from './componentes/Formulario'
 import Menu from './componentes/Menu';
 import Lista from './componentes/Lista';
+import { transacao, conta, categoria } from './configCampos'
 
 function App() {
-  const transacao = [
-    { nome: "nome", label: "Nome", tipo: "text" },
-    { nome: "descricao", label: "Descrição", tipo: "text" },
-    { nome: "valor", label: "Valor", tipo: "number" },
-    { nome: "conta", label: "Conta", tipo: "select", lista: "contas" },
-    { nome: "categoria", label: "Categoria", tipo: "select", lista: "categorias" },
-    { nome: "tipo", label: "Tipo", tipo: "select", lista: "tipos" },
-    { nome: "data", label: "Data", tipo: "date" },
-    { nome: "parcela", label: "Parcela", tipo: "number" }
-  ];
-
-  const conta = [
-    { nome: "nome", label: "Nome", tipo: "text" },
-  ]
-
-  const categoria = [
-    { nome: "nome", label: "Nome", tipo: "text" },
-  ]
 
   return (
     <section>
