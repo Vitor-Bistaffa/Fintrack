@@ -8,18 +8,21 @@ export default function Lista({ endpoint, colapsavel = false }) {
     const [erro, setErro] = useState(null);
     const [abertos, setAbertos] = useState({});
 
+
     // Data atual
     const hoje = new Date();
     const anoAtual = hoje.getFullYear();
     const mesAtual = String(hoje.getMonth() + 1).padStart(2, "0");
 
+    const [mesSelecionado, setMesSelecionado] = useState(mesAtual);
+    const [anoSelecionado, setAnoSelecionado] = useState(anoAtual);
+
     // Filtrar dados apenas do mês atual
     const dadosMes = dados.filter((item) => {
         if (!item.data) return false;
         const [ano, mes] = item.data.split("-");
-        return ano === anoAtual.toString() && mes === mesAtual;
+        return ano === anoSelecionado && mes === mesSelecionado;
     });
-
     // =========================
     // Função para buscar dados da API
     // =========================
@@ -40,17 +43,17 @@ export default function Lista({ endpoint, colapsavel = false }) {
     const listaTotais = async () => {
         try {
             const resReceita = await fetch(
-                `http://localhost:8080/transacao/total?tipo=Receita&ano=${anoAtual}`
+                `http://localhost:8080/transacao/total?tipo=Receita&ano=${anoSelecionado}`
             );
             const resDespesa = await fetch(
-                `http://localhost:8080/transacao/total?tipo=Despesa&ano=${anoAtual}`
+                `http://localhost:8080/transacao/total?tipo=Despesa&ano=${anoSelecionado}`
             );
 
             const jsonReceita = await resReceita.json();
             const jsonDespesa = await resDespesa.json();
 
-            const receitaMes = jsonReceita.find((r) => r.mes === parseInt(mesAtual));
-            const despesaMes = jsonDespesa.find((d) => d.mes === parseInt(mesAtual));
+            const receitaMes = jsonReceita.find((r) => r.mes === parseInt(mesSelecionado));
+            const despesaMes = jsonDespesa.find((d) => d.mes === parseInt(mesSelecionado));
 
             setTotais({
                 receita: receitaMes ? receitaMes.total : 0,
@@ -110,7 +113,7 @@ export default function Lista({ endpoint, colapsavel = false }) {
     useEffect(() => {
         listaTotais();
         listar();
-    }, [endpoint]);
+    }, [endpoint, mesSelecionado, anoSelecionado]);
 
     // =========================
     // Agrupar dados por categoria
@@ -222,9 +225,22 @@ export default function Lista({ endpoint, colapsavel = false }) {
                         + Cadastro
                     </Link>
                 </div>
-                <div>
-                    <input type="text" /> data
-                </div>
+                {colapsavel && (
+                    <div className="mb-4">
+                        <label className="text-gray-200 font-medium mr-2">Filtrar por mês/ano:</label>
+                        <input
+                            type="month"
+                            value={`${anoSelecionado}-${mesSelecionado}`}
+                            onChange={(e) => {
+                                const [ano, mes] = e.target.value.split("-");
+                                setAnoSelecionado(ano);
+                                setMesSelecionado(mes);
+                            }}
+                            className="px-3 py-2 rounded-lg bg-gray-700 text-gray-100"
+                        />
+                    </div>
+                )}
+
 
                 {/* Totais */}
                 {colapsavel && (
