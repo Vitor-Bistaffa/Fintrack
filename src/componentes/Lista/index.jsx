@@ -11,18 +11,10 @@ export default function Lista({ endpoint, colapsavel = false }) {
 
     // Data atual
     const hoje = new Date();
-    const anoAtual = hoje.getFullYear();
-    const mesAtual = String(hoje.getMonth() + 1).padStart(2, "0");
+    const [mesSelecionado, setMesSelecionado] = useState(String(hoje.getMonth() + 1).padStart(2, "0"));
+    const [anoSelecionado, setAnoSelecionado] = useState(String(hoje.getFullYear()));
 
-    const [mesSelecionado, setMesSelecionado] = useState(mesAtual);
-    const [anoSelecionado, setAnoSelecionado] = useState(anoAtual);
 
-    // Filtrar dados apenas do mês atual
-    const dadosMes = dados.filter((item) => {
-        if (!item.data) return false;
-        const [ano, mes] = item.data.split("-");
-        return ano === anoSelecionado && mes === mesSelecionado;
-    });
     // =========================
     // Função para buscar dados da API
     // =========================
@@ -36,6 +28,8 @@ export default function Lista({ endpoint, colapsavel = false }) {
             console.error("Erro:", erro);
         }
     };
+
+
 
     // =========================
     // Função para buscar totais de receitas e despesas do mês
@@ -115,6 +109,13 @@ export default function Lista({ endpoint, colapsavel = false }) {
         listar();
     }, [endpoint, mesSelecionado, anoSelecionado]);
 
+    // Filtrar dados apenas do mês atual
+    const dadosMes = dados.filter((item) => {
+        if (!item.data) return false;
+        const [ano, mes] = item.data.split("-");
+        return ano === anoSelecionado && mes === mesSelecionado;
+    });
+
     // =========================
     // Agrupar dados por categoria
     // =========================
@@ -125,10 +126,14 @@ export default function Lista({ endpoint, colapsavel = false }) {
         return acc;
     }, {});
 
+
+
     // =========================
     // Colunas da tabela dinamicamente
     // =========================
     const colunas = dados.length > 0 ? Object.keys(dados[0]) : [];
+
+
 
     // =========================
     // Formata os campos da tabela
@@ -160,6 +165,8 @@ export default function Lista({ endpoint, colapsavel = false }) {
 
         return valor;
     };
+
+
 
     // Renderiza a tabela
     const renderTabela = (itens) => (
@@ -207,6 +214,8 @@ export default function Lista({ endpoint, colapsavel = false }) {
             </table>
         </div>
     );
+
+
 
 
     // Render principal do componente
