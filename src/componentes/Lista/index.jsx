@@ -105,6 +105,7 @@ export default function Lista({ endpoint, colapsavel = false }) {
     // useEffect para carregar dados ao montar o componente
     // =========================
     useEffect(() => {
+        setDados([]);
         listaTotais();
         listar();
     }, [endpoint, mesSelecionado, anoSelecionado]);
