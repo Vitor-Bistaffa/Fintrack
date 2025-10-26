@@ -8,16 +8,12 @@ export default function Lista({ endpoint, colapsavel = false }) {
     const [erro, setErro] = useState(null);
     const [abertos, setAbertos] = useState({});
 
-
-    // Data atual
+    // Define mês e ano atuais
     const hoje = new Date();
     const [mesSelecionado, setMesSelecionado] = useState(String(hoje.getMonth() + 1).padStart(2, "0"));
     const [anoSelecionado, setAnoSelecionado] = useState(String(hoje.getFullYear()));
 
-
-    // =========================
-    // Função para buscar dados da API
-    // =========================
+    // Busca os dados da API
     const listar = async () => {
         try {
             const resposta = await fetch(`http://localhost:8080/${endpoint}`);
@@ -29,11 +25,7 @@ export default function Lista({ endpoint, colapsavel = false }) {
         }
     };
 
-
-
-    // =========================
-    // Função para buscar totais de receitas e despesas do mês
-    // =========================
+    // Busca totais de receitas e despesas do mês
     const listaTotais = async () => {
         try {
             const resReceita = await fetch(
@@ -46,8 +38,8 @@ export default function Lista({ endpoint, colapsavel = false }) {
             const jsonReceita = await resReceita.json();
             const jsonDespesa = await resDespesa.json();
 
-            const receitaMes = jsonReceita.find((r) => r.mes === parseInt(mesSelecionado));
-            const despesaMes = jsonDespesa.find((d) => d.mes === parseInt(mesSelecionado));
+            const receitaMes = jsonReceita.find(r => r.mes === parseInt(mesSelecionado));
+            const despesaMes = jsonDespesa.find(d => d.mes === parseInt(mesSelecionado));
 
             setTotais({
                 receita: receitaMes ? receitaMes.total : 0,
@@ -59,9 +51,7 @@ export default function Lista({ endpoint, colapsavel = false }) {
         }
     };
 
-    // =========================
-    // Define método de remoção
-    // =========================
+    // Define o método de remoção conforme o endpoint
     const metodoRemocao = (endpoint) => {
         switch (endpoint) {
             case "transacao":
@@ -71,9 +61,7 @@ export default function Lista({ endpoint, colapsavel = false }) {
         }
     };
 
-    // =========================
-    // Remove item
-    // =========================
+    // Remove um item pelo id
     const remover = async (id) => {
         try {
             const resposta = await fetch(
@@ -91,9 +79,7 @@ export default function Lista({ endpoint, colapsavel = false }) {
         }
     };
 
-    // =========================
-    // Alterna categorias (apenas se colapsavel = true)
-    // =========================
+    // Alterna o estado de exibição de cada categoria
     const toggleCategoria = (categoria) => {
         setAbertos((prev) => ({
             ...prev,
@@ -101,25 +87,21 @@ export default function Lista({ endpoint, colapsavel = false }) {
         }));
     };
 
-    // =========================
-    // useEffect para carregar dados ao montar o componente
-    // =========================
+    // Carrega os dados ao montar o componente
     useEffect(() => {
         setDados([]);
         listaTotais();
         listar();
     }, [endpoint, mesSelecionado, anoSelecionado]);
 
-    // Filtrar dados apenas do mês atual
+    // Filtra dados do mês e ano selecionados
     const dadosMes = dados.filter((item) => {
         if (!item.data) return false;
         const [ano, mes] = item.data.split("-");
         return ano === anoSelecionado && mes === mesSelecionado;
     });
 
-    // =========================
-    // Agrupar dados por categoria
-    // =========================
+    // Agrupa itens por categoria
     const dadosAgrupados = dadosMes.reduce((acc, item) => {
         const categoria = item.categoria;
         if (!acc[categoria]) acc[categoria] = [];
@@ -127,20 +109,11 @@ export default function Lista({ endpoint, colapsavel = false }) {
         return acc;
     }, {});
 
-
-
-    // =========================
-    // Colunas da tabela dinamicamente
-    // =========================
+    // Define colunas dinamicamente
     const colunas = dados.length > 0 ? Object.keys(dados[0]) : [];
 
-
-
-    // =========================
-    // Formata os campos da tabela
-    // =========================
+    // Formata campos da tabela
     const formatarCampo = (coluna, valor, tipo) => {
-        // Valor com máscara de moeda
         if (coluna === "valor" && typeof valor === "number") {
             const cor = tipo === "Receita" ? "text-green-400" : tipo === "Despesa" ? "text-red-400" : "";
             return (
@@ -153,21 +126,17 @@ export default function Lista({ endpoint, colapsavel = false }) {
             );
         }
 
-        // Data formatada sem ajuste de fuso horário
         if (coluna === "data" && typeof valor === "string") {
             const [ano, mes, dia] = valor.split("-");
             return `${dia}/${mes}/${ano}`;
         }
 
-        // Objetos convertidos em JSON
         if (typeof valor === "object" && valor !== null) {
             return JSON.stringify(valor);
         }
 
         return valor;
     };
-
-
 
     // Renderiza a tabela
     const renderTabela = (itens) => (
@@ -195,7 +164,6 @@ export default function Lista({ endpoint, colapsavel = false }) {
                                 </td>
                             ))}
                             <td className="px-4 py-2 flex gap-2">
-
                                 <Link
                                     className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-1 px-3 rounded-lg shadow"
                                     to={`/${endpoint}/editar/${item.id}`}
@@ -216,10 +184,7 @@ export default function Lista({ endpoint, colapsavel = false }) {
         </div>
     );
 
-
-
-
-    // Render principal do componente
+    // Renderização principal
     return (
         <section className="min-h-screen flex items-center justify-center bg-gray-900 px-4 py-10">
             <div className="w-full max-w-6xl bg-gray-800 p-8 rounded-2xl shadow-xl">
@@ -235,6 +200,8 @@ export default function Lista({ endpoint, colapsavel = false }) {
                         + Cadastro
                     </Link>
                 </div>
+
+                {/* Filtro por mês/ano */}
                 {colapsavel && (
                     <div className="mb-4">
                         <label className="text-gray-200 font-medium mr-2">Filtrar por mês/ano:</label>
@@ -250,7 +217,6 @@ export default function Lista({ endpoint, colapsavel = false }) {
                         />
                     </div>
                 )}
-
 
                 {/* Totais */}
                 {colapsavel && (
@@ -283,32 +249,24 @@ export default function Lista({ endpoint, colapsavel = false }) {
                     </p>
                 )}
 
-                {/* Tabelas */}
+                {/* Tabelas agrupadas ou simples */}
                 <div className="space-y-6">
                     {colapsavel
-                        ? Object.entries(dadosAgrupados).map(
-                            ([categoria, itens]) => (
-                                <div
-                                    key={categoria}
-                                    className="bg-gray-700 rounded-lg shadow"
+                        ? Object.entries(dadosAgrupados).map(([categoria, itens]) => (
+                            <div key={categoria} className="bg-gray-700 rounded-lg shadow">
+                                <button
+                                    onClick={() => toggleCategoria(categoria)}
+                                    className="w-full text-left px-4 py-3 font-semibold text-gray-100 bg-gray-600 hover:bg-gray-500 rounded-t-lg transition-colors"
                                 >
-                                    <button
-                                        onClick={() =>
-                                            toggleCategoria(categoria)
-                                        }
-                                        className="w-full text-left px-4 py-3 font-semibold text-gray-100 bg-gray-600 hover:bg-gray-500 rounded-t-lg transition-colors"
-                                    >
-                                        {categoria} ({itens.length})
-                                    </button>
-
-                                    {abertos[categoria] && (
-                                        <div className="p-4">
-                                            {renderTabela(itens)}
-                                        </div>
-                                    )}
-                                </div>
-                            )
-                        )
+                                    {categoria} ({itens.length})
+                                </button>
+                                {abertos[categoria] && (
+                                    <div className="p-4">
+                                        {renderTabela(itens)}
+                                    </div>
+                                )}
+                            </div>
+                        ))
                         : renderTabela(dados)}
                 </div>
             </div>

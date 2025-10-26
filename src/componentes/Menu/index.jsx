@@ -1,6 +1,8 @@
 import { Link } from "react-router";
 
+// Componente de menu principal do sistema
 export default function Menu() {
+    // Renderiza o cabeçalho com os links de navegação
     return (
         <header className="bg-gray-800 text-white shadow-md">
             <nav className="flex items-center justify-center gap-8 p-4 text-lg font-semibold">
@@ -30,5 +32,5 @@ export default function Menu() {
                 </Link>
             </nav>
         </header>
-    )
+    );
 }
