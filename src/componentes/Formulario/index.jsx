@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
+import { api } from "../../ChamadaApi/api";
 
 export default function Formulario({ endpoint, campos, itens }) {
     // Hook de navegação e parâmetro da URL
@@ -19,8 +20,8 @@ export default function Formulario({ endpoint, campos, itens }) {
     useEffect(() => {
         buscaListas();
         if (id) {
-            fetch(`http://localhost:8080/${endpoint}?id=${id}`)
-                .then((res) => res.json())
+            console.log(id)
+            api.listar(`${endpoint}?id=${id}`)
                 .then((json) => setDados(json[0]))
                 .catch((erro) => console.error("Erro ao carregar os itens", erro));
         }
@@ -32,14 +33,10 @@ export default function Formulario({ endpoint, campos, itens }) {
 
         // Caso esteja editando (ID presente)
         if (id) {
-            try {
-                const resposta = await fetch(`http://localhost:8080/${endpoint}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(dados)
-                });
 
-                if (resposta.ok) {
+            try {
+                const resposta = await api.criar(endpoint, id, dados);
+                if (resposta) {
                     setMensagem("✅ Dados enviados com sucesso!");
                     navigate(`/${endpoint}`); // Redireciona após editar
                 } else {
@@ -50,17 +47,12 @@ export default function Formulario({ endpoint, campos, itens }) {
                 setMensagem("❌ Erro ao enviar.");
             }
 
-        // Caso seja um novo cadastro
+            // Caso seja um novo cadastro
         } else {
-            try {
-                console.log(JSON.stringify(dados));
-                const resposta = await fetch(`http://localhost:8080/${endpoint}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(dados)
-                });
 
-                if (resposta.ok) {
+            try {
+                const resposta = await api.criar(endpoint, null, dados);
+                if (resposta) {
                     setMensagem("✅ Dados enviados com sucesso!");
                     setDados({}); // Limpa os campos após envio
                 } else {
@@ -70,17 +62,16 @@ export default function Formulario({ endpoint, campos, itens }) {
                 console.error("Erro:", erro);
                 setMensagem("❌ Erro ao enviar.");
             }
+
         }
     };
 
     // Busca listas de contas e categorias
     const buscaListas = async () => {
         try {
-            const resContas = await fetch("http://localhost:8080/conta");
-            const contasJson = await resContas.json();
+            const contasJson = await api.listar("conta");
 
-            const resCategorias = await fetch("http://localhost:8080/categoria");
-            const categoriasJson = await resCategorias.json();
+            const categoriasJson = await api.listar("categoria");
 
             setLista((listaAtual) => ({
                 ...listaAtual,
@@ -111,7 +102,7 @@ export default function Formulario({ endpoint, campos, itens }) {
                 <h2 className="text-2xl font-bold text-center text-gray-100 mb-2">
                     Formulário de {endpoint}
                 </h2>
-    
+
                 {/* Renderiza os campos dinamicamente */}
                 {campos.map((campo) => (
                     <div key={campo.nome} className="flex flex-col">
@@ -135,7 +126,7 @@ export default function Formulario({ endpoint, campos, itens }) {
                                 ))}
                             </select>
 
-                        // Campo do tipo input
+                            // Campo do tipo input
                         ) : (
                             <input
                                 className="bg-gray-700 text-white border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"

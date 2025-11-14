@@ -7,7 +7,7 @@ export default function Menu() {
         <header className="bg-gray-800 text-white shadow-md">
             <nav className="flex items-center justify-center gap-8 p-4 text-lg font-semibold">
                 <Link
-                    to="/"
+                    to="/geral"
                     className="hover:text-purple-400 transition-colors"
                 >
                     Início

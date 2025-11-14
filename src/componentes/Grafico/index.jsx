@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import {
     LineChart,
     Line,
@@ -7,14 +8,17 @@ import {
     Legend,
     ResponsiveContainer,
 } from "recharts";
+import { meses } from '../../configCampos';
+import { api } from '../../ChamadaApi/api';
 
-export default function Grafico({ receitas = [], despesas = [] }) {
 
-    // Array com nomes dos meses (usado no eixo X)
-    const meses = [
-        "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
-        "Jul", "Ago", "Set", "Out", "Nov", "Dez"
-    ];
+export default function Grafico() {
+
+    const [receitas, setReceitas] = useState([]);
+    const [despesas, setDespesas] = useState([]);
+
+    // Ano fixo para o carregamento dos dados do gráfico
+    const [anoSelecionado] = useState(2025);
 
     // Monta os dados do gráfico com base nas receitas e despesas recebidas
     const dados = meses.map((nome, i) => {
@@ -26,11 +30,30 @@ export default function Grafico({ receitas = [], despesas = [] }) {
         };
     });
 
+
+    useEffect(() => {
+        const carregaDados = async () => {
+            try {
+                const [receitas, despesas] = await Promise.all([
+                    api.totaisPorAno("Receita", anoSelecionado),
+                    api.totaisPorAno("Despesa", anoSelecionado)
+                ]);
+
+                setReceitas(receitas);
+                setDespesas(despesas);
+            } catch (erro) {
+                console.error("Erro:", erro);
+            }
+        };
+
+        carregaDados();
+    }, [anoSelecionado]);
+
     // Renderização do gráfico
     return (
         <section className="min-h-screen flex items-center justify-center bg-gray-900 px-4 py-10">
             <div className="w-full max-w-5xl bg-gray-800 p-8 rounded-2xl shadow-xl">
-                
+
                 {/* Título do gráfico */}
                 <h2 className="text-2xl font-bold text-gray-100 text-center mb-8">
                     Evolução Mensal

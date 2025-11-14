@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
+import { api } from "../../ChamadaApi/api";
 
 export default function Lista({ endpoint, colapsavel = false }) {
     // Estados principais
@@ -16,9 +17,8 @@ export default function Lista({ endpoint, colapsavel = false }) {
     // Busca os dados da API
     const listar = async () => {
         try {
-            const resposta = await fetch(`http://localhost:8080/${endpoint}`);
-            const json = await resposta.json();
-            setDados(json);
+            const resposta = await api.listar(endpoint);
+            setDados(resposta);
         } catch (erro) {
             setErro(erro);
             console.error("Erro:", erro);
@@ -28,18 +28,11 @@ export default function Lista({ endpoint, colapsavel = false }) {
     // Busca totais de receitas e despesas do mês
     const listaTotais = async () => {
         try {
-            const resReceita = await fetch(
-                `http://localhost:8080/transacao/total?tipo=Receita&ano=${anoSelecionado}`
-            );
-            const resDespesa = await fetch(
-                `http://localhost:8080/transacao/total?tipo=Despesa&ano=${anoSelecionado}`
-            );
+            const resReceita = await api.totaisPorAno("Receita", anoSelecionado);
+            const resDespesa = await api.totaisPorAno("Despesa", anoSelecionado);
 
-            const jsonReceita = await resReceita.json();
-            const jsonDespesa = await resDespesa.json();
-
-            const receitaMes = jsonReceita.find(r => r.mes === parseInt(mesSelecionado));
-            const despesaMes = jsonDespesa.find(d => d.mes === parseInt(mesSelecionado));
+            const receitaMes = resReceita.find(r => r.mes === parseInt(mesSelecionado));
+            const despesaMes = resDespesa.find(d => d.mes === parseInt(mesSelecionado));
 
             setTotais({
                 receita: receitaMes ? receitaMes.total : 0,
@@ -51,28 +44,11 @@ export default function Lista({ endpoint, colapsavel = false }) {
         }
     };
 
-    // Define o método de remoção conforme o endpoint
-    const metodoRemocao = (endpoint) => {
-        switch (endpoint) {
-            case "transacao":
-                return "DELETE";
-            default:
-                return "PUT";
-        }
-    };
-
     // Remove um item pelo id
     const remover = async (id) => {
         try {
-            const resposta = await fetch(
-                `http://localhost:8080/${endpoint}/remover`,
-                {
-                    method: metodoRemocao(endpoint),
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ id }),
-                }
-            );
-            if (resposta.ok) listar();
+            const resposta = await api.deletar(endpoint, id);
+            setDados((prev) => prev.filter((item) => item.id !== id));
         } catch (erro) {
             setErro(erro);
             console.error("Erro:", erro);
@@ -153,9 +129,9 @@ export default function Lista({ endpoint, colapsavel = false }) {
                     </tr>
                 </thead>
                 <tbody>
-                    {itens.map((item) => (
+                    {itens.map((item, index) => (
                         <tr
-                            key={item.id}
+                            key={`${item.id || 'sem-id'}-${index}`}
                             className="border-t border-gray-700 hover:bg-gray-800 transition-colors"
                         >
                             {colunas.map((coluna) => (
