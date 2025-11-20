@@ -16,6 +16,7 @@ export default function Lista({ endpoint, colapsavel = false }) {
 
     // Busca os dados da API
     const listar = async () => {
+
         try {
             const resposta = await api.listar(endpoint);
             setDados(resposta);
@@ -55,17 +56,16 @@ export default function Lista({ endpoint, colapsavel = false }) {
         }
     };
 
-    // Alterna o estado de exibição de cada categoria
-    const toggleCategoria = (categoria) => {
+    // Alterna o estado de exibição de cada colapsável
+    const toggleColapsavel = (nomeColapsavel) => {
         setAbertos((prev) => ({
             ...prev,
-            [categoria]: !prev[categoria],
+            [nomeColapsavel]: !prev[nomeColapsavel],
         }));
     };
 
     // Carrega os dados ao montar o componente
     useEffect(() => {
-        setDados([]);
         listaTotais();
         listar();
     }, [endpoint, mesSelecionado, anoSelecionado]);
@@ -79,7 +79,7 @@ export default function Lista({ endpoint, colapsavel = false }) {
 
     // Agrupa itens por categoria
     const dadosAgrupados = dadosMes.reduce((acc, item) => {
-        const categoria = item.categoria;
+        const categoria = item.categoria.nome;
         if (!acc[categoria]) acc[categoria] = [];
         acc[categoria].push(item);
         return acc;
@@ -106,9 +106,13 @@ export default function Lista({ endpoint, colapsavel = false }) {
             const [ano, mes, dia] = valor.split("-");
             return `${dia}/${mes}/${ano}`;
         }
+        
+        if (coluna === "conta"){
+            return valor.nome
+        }
 
-        if (typeof valor === "object" && valor !== null) {
-            return JSON.stringify(valor);
+        if (coluna === "categoria"){
+            return valor.nome
         }
 
         return valor;
@@ -116,6 +120,7 @@ export default function Lista({ endpoint, colapsavel = false }) {
 
     // Renderiza a tabela
     const renderTabela = (itens) => (
+
         <div className="overflow-x-auto">
             <table className="w-full text-sm text-left text-gray-200 border border-gray-700 rounded-lg shadow-md">
                 <thead className="bg-gray-700 text-gray-100">
@@ -131,7 +136,7 @@ export default function Lista({ endpoint, colapsavel = false }) {
                 <tbody>
                     {itens.map((item, index) => (
                         <tr
-                            key={`${item.id || 'sem-id'}-${index}`}
+                            key={`${index}`}
                             className="border-t border-gray-700 hover:bg-gray-800 transition-colors"
                         >
                             {colunas.map((coluna) => (
@@ -160,7 +165,7 @@ export default function Lista({ endpoint, colapsavel = false }) {
         </div>
     );
 
-    // Renderização principal
+    // Renderização principal   
     return (
         <section className="min-h-screen flex items-center justify-center bg-gray-900 px-4 py-10">
             <div className="w-full max-w-6xl bg-gray-800 p-8 rounded-2xl shadow-xl">
@@ -228,22 +233,24 @@ export default function Lista({ endpoint, colapsavel = false }) {
                 {/* Tabelas agrupadas ou simples */}
                 <div className="space-y-6">
                     {colapsavel
-                        ? Object.entries(dadosAgrupados).map(([categoria, itens]) => (
-                            <div key={categoria} className="bg-gray-700 rounded-lg shadow">
+                        ? Object.entries(dadosAgrupados).map(([nomeColapsavel, itens]) => (
+                            <div key={nomeColapsavel} className="bg-gray-700 rounded-lg shadow">
                                 <button
-                                    onClick={() => toggleCategoria(categoria)}
+                                    onClick={() => toggleColapsavel(nomeColapsavel)}
                                     className="w-full text-left px-4 py-3 font-semibold text-gray-100 bg-gray-600 hover:bg-gray-500 rounded-t-lg transition-colors"
                                 >
-                                    {categoria} ({itens.length})
+                                    {nomeColapsavel} ({itens.length})
                                 </button>
-                                {abertos[categoria] && (
+                                {abertos[nomeColapsavel] && (
                                     <div className="p-4">
                                         {renderTabela(itens)}
                                     </div>
                                 )}
                             </div>
                         ))
-                        : renderTabela(dados)}
+                        : renderTabela(dados)
+                    }
+
                 </div>
             </div>
         </section>

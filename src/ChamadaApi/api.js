@@ -4,7 +4,6 @@ const API_URL = "http://localhost:8080";
 
 async function apiFetch(endpoint, options = {}) {
     const token = localStorage.getItem("Bearer");
-    console.log(endpoint)
     const headers = {
         "Content-Type": "application/json",
         ...(token && { Authorization: `Bearer ${token}` }),
@@ -15,13 +14,6 @@ async function apiFetch(endpoint, options = {}) {
         ...options,
         headers,
     });
-
-    if (response.status === 403) {
-        console.warn("Token inválido ou expirado — redirecionando para login");
-        localStorage.removeItem("Bearer");
-        window.location.href = "/login";
-        return null;
-    }
 
     if (!response.ok) {
         const error = await response.text();
@@ -37,7 +29,6 @@ async function apiFetch(endpoint, options = {}) {
     }
 }
 
-// ===== Exemplos de endpoints específicos =====
 export const api = {
     listar: (endpoint, id) =>
         id ?
@@ -49,7 +40,7 @@ export const api = {
 
     criar: (endpoint, id, dados) =>
         id ?
-            apiFetch(`/${endpoint}/${id}`, { method: "PUT", body: JSON.stringify(dados) })
+            apiFetch(`/${endpoint}`, { method: "PUT", body: JSON.stringify(dados) })
             :
             apiFetch(`/${endpoint}`, { method: "POST", body: JSON.stringify(dados) })
     ,

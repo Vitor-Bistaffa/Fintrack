@@ -16,11 +16,11 @@ export default function Formulario({ endpoint, campos, itens }) {
     });
     const [mensagem, setMensagem] = useState('');
 
+
     // useEffect inicial → busca listas e carrega item caso exista ID
     useEffect(() => {
-        buscaListas();
+        buscaListas()
         if (id) {
-            console.log(id)
             api.listar(`${endpoint}?id=${id}`)
                 .then((json) => setDados(json[0]))
                 .catch((erro) => console.error("Erro ao carregar os itens", erro));
@@ -66,18 +66,17 @@ export default function Formulario({ endpoint, campos, itens }) {
         }
     };
 
-    // Busca listas de contas e categorias
     const buscaListas = async () => {
         try {
             const contasJson = await api.listar("conta");
 
             const categoriasJson = await api.listar("categoria");
-
             setLista((listaAtual) => ({
                 ...listaAtual,
                 contas: contasJson,
                 categorias: categoriasJson
             }));
+
         } catch (erro) {
             console.error("Erro ao buscar listas:", erro);
             setMensagem("❌ Erro ao buscar dados.");
@@ -90,7 +89,6 @@ export default function Formulario({ endpoint, campos, itens }) {
         const numero = Number(valor.replace(/\D/g, "")) / 100;
         return numero.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
     };
-
     // Estrutura do formulário
     return (
         <section className="min-h-screen flex items-center justify-center bg-gray-900 px-4">
@@ -107,12 +105,18 @@ export default function Formulario({ endpoint, campos, itens }) {
                 {campos.map((campo) => (
                     <div key={campo.nome} className="flex flex-col">
                         <label className="mb-1 text-sm font-semibold text-gray-200">{campo.label}</label>
-
                         {/* Campo do tipo select */}
+
                         {campo.tipo === "select" ? (
                             <select
-                                className="bg-gray-700 text-white border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                value={dados[campo.nome] || ""}
+                                className="bg-gray-700 text-white border  border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                value={
+                                    
+                                    id
+                                        ? dados[campo.nome]?.id || dados.tipo || ""       // edição
+                                        : dados[campo.nome] || ""           // criação
+                                }
+
                                 onChange={(evento) =>
                                     setDados({ ...dados, [campo.nome]: evento.target.value })
                                 }
@@ -123,6 +127,7 @@ export default function Formulario({ endpoint, campos, itens }) {
                                     <option key={index} value={item.id || item}>
                                         {item.nome || item}
                                     </option>
+
                                 ))}
                             </select>
 
