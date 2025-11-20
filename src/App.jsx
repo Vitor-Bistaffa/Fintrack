@@ -1,7 +1,6 @@
 import './App.css';
 import { BrowserRouter, Route, Routes } from 'react-router';
 import Formulario from './componentes/Formulario';
-import Menu from './componentes/Menu';
 import Lista from './componentes/Lista';
 import { transacao, conta, categoria } from './configCampos';
 import Grafico from './componentes/Grafico';
@@ -17,7 +16,7 @@ function App() {
 
         <Routes>
           {/*Login*/}
-          <Route path='/login' element={<Login />} />
+          <Route path='/' element={<Login />} />
 
 
           <Route element={<RotaPrivada />}>

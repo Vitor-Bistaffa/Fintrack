@@ -13,6 +13,7 @@ export default function Login() {
     try {
       const json = await api.login(dados);
       localStorage.setItem("Bearer", json.token);
+      localStorage.setItem("User",dados.login)
       setMensagem("✅ Login realizado com sucesso!");
       navigate("/geral");
     } catch (erro) {

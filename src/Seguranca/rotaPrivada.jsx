@@ -5,10 +5,9 @@ export default function RotaPrivada() {
   const token = localStorage.getItem("Bearer");
 
   if (!token) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
-  // Se o usuário está logado, renderiza o Menu + a rota filha
   return (
     <>
       <Menu />
