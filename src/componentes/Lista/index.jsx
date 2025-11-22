@@ -130,7 +130,10 @@ export default function Lista({ endpoint, colapsavel = false }) {
                                 {coluna}
                             </th>
                         ))}
-                        <th className="px-4 py-3">Ações</th>
+                        {(itens.length > 0) && (
+                            <th className="px-4 py-3">Ações</th>
+                        )}
+                        
                     </tr>
                 </thead>
                 <tbody>

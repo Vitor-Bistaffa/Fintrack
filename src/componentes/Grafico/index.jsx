@@ -56,7 +56,7 @@ export default function Grafico() {
 
                 {/* Título do gráfico */}
                 <h2 className="text-2xl font-bold text-gray-100 text-center mb-8">
-                    Evolução Mensal
+                    Transações de {anoSelecionado}
                 </h2>
 
                 {/* Container responsivo do gráfico */}
