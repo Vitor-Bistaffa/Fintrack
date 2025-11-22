@@ -1,4 +1,4 @@
-// src/api/api.js
+import verificaAutenticacao from "../Seguranca/verificaAutenticacao";
 
 const API_URL = "http://localhost:8080";
 
@@ -9,11 +9,15 @@ async function apiFetch(endpoint, options = {}) {
         ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
     };
-    
+
     const response = await fetch(`${API_URL}${endpoint}`, {
         ...options,
         headers,
     });
+
+    if (response.status === 403) {
+        verificaAutenticacao();
+    }
 
     if (!response.ok) {
         const error = await response.text();
@@ -35,7 +39,7 @@ export const api = {
             apiFetch(`/${endpoint}/${id}`)
             :
             apiFetch(`/${endpoint}`)
-    
+
     ,
 
     criar: (endpoint, id, dados) =>
